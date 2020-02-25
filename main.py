@@ -91,6 +91,13 @@ def start(update, context):
     return FIRST
 
 
+def enumerar_first_states():
+    states = []
+    for c in ciudades:
+        states.append(CallbackQueryHandler(city, pattern='^' + c + '$'))
+    return states
+
+
 def start_over(update, context):
     """Prompt same text & keyboard as `start` does but not as new message"""
     # Get CallbackQuery from Update
@@ -137,15 +144,9 @@ def botones_farmacias(update, context, ciudad, accion):
         )
 
 
-def cr(update, context):
-    """Show new choice of buttons"""
-    botones_farmacias(update, context, 'CR', EDIT)
-    return THIRD
-
-
-def rt(update, context):
-    """Show new choice of buttons"""
-    botones_farmacias(update, context, 'RT', EDIT)
+def city(update, context):
+    """update.callback_query.data contains the key of the city in cities dictionary"""
+    botones_farmacias(update, context, update.callback_query.data, EDIT)
     return THIRD
 
 
@@ -193,7 +194,7 @@ def error(update, context):
 
 def main():
     # Create the Updater and pass it your bot's token.
-    telegram_token = os.environ['TELEGRAM_TOKEN']
+    telegram_token = os.environ['TELEGRAM_TOKEN_DEV']
     updater = Updater(telegram_token, use_context=True)
 
     # Get the dispatcher to register handlers
@@ -211,10 +212,7 @@ def main():
                       CommandHandler('rt', rt_init),
                       CommandHandler('cr', cr_init)],
         states={
-            FIRST: [CallbackQueryHandler(rt, pattern='^' + 'RT' + '$'),
-                    CallbackQueryHandler(cr, pattern='^' + 'CR' + '$')],
-            # SECOND: [CallbackQueryHandler(start_over, pattern='^' + str(ONE) + '$'),
-            #          CallbackQueryHandler(end, pattern='^' + str(TWO) + '$')],
+            FIRST: enumerar_first_states(),
             THIRD: [CallbackQueryHandler(button)]
         },
         fallbacks=[CommandHandler('start', start)]
